@@ -1,0 +1,8 @@
+# compiled binaries & objects
+fileserver
+server
+*.o
+
+# editor files
+.vscode/
+*.swp

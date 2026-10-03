@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Files</title>
+<style>
+:root{color-scheme:dark;--bg:#131416;--card:#1c1d21;--ink:#e8e9ec;--mute:#8f929b;--line:#2c2e34;--acc:#8ea2ff;--accInk:#0c1022;--tab:#c9a04a;--danger:#f08477}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 14px 70px}
+header{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+#crumbs{font:1.35rem/1.25 Georgia,"Iowan Old Style",serif;color:var(--mute);overflow-wrap:anywhere}
+#crumbs a{color:var(--mute);text-decoration:none}
+#crumbs a:hover{color:var(--acc);text-decoration:underline}
+#crumbs strong{color:var(--ink);font-weight:600}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer;text-decoration:none;display:inline-block}
+button:hover,.btn:hover{border-color:var(--mute)}
+.primary{background:var(--acc);border-color:var(--acc);color:var(--accInk);font-weight:600}
+.danger{color:var(--danger)}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+ul{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.name{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left;border:0;background:none;padding:8px 4px;font-size:1rem;color:var(--ink)}
+.name:hover{border:0}
+.name span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 4px}
+.info>span:last-child{min-width:0}
+.info b{display:block;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info small{display:block;color:var(--mute);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acts{display:flex;gap:6px;flex:none}
+.ic{flex:none;width:38px;height:28px;border:1px solid var(--line);border-radius:4px;font-size:.7rem;color:var(--mute);display:grid;place-items:center}
+.ic.dir{position:relative;border:0;background:var(--tab);border-radius:2px 5px 5px 5px;margin-top:4px}
+.ic.dir::before{content:"";position:absolute;left:0;top:-4px;width:16px;height:5px;background:var(--tab);border-radius:3px 3px 0 0}
+.empty{padding:32px 16px;text-align:center;color:var(--mute)}
+.note{color:var(--mute);font-size:.85rem;margin:0 2px 10px}
+#st{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:.9rem;max-width:90vw}
+#st.bad{background:var(--danger);color:#1a0906}
+dialog{width:min(920px,96vw);max-height:94vh;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.pvhead,.pvfoot{display:flex;gap:8px;align-items:center;padding:10px 12px}
+.pvhead span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pvbody{background:#000;display:grid;place-items:center}
+#pvbody img,#pvbody video{max-width:100%;max-height:72vh}
+#ups{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.uphead,.uprow{display:flex;justify-content:space-between;gap:12px;font-size:.85rem}
+.uphead{margin-bottom:6px}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--acc)}
+.uprow{margin-top:10px;color:var(--mute)}
+.uprow span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uprow+.bar{height:4px;margin-top:4px}
+.upmore{margin-top:10px;color:var(--mute);font-size:.85rem}
+#stobar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:8px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;z-index:50;font-size:.85rem;color:var(--mute);transition:background .15s}
+#stobar:hover{background:var(--line)}
+#stobar .sbar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;max-width:320px}
+#stobar .sbar i{display:block;height:100%;background:var(--acc);border-radius:3px;transition:width .3s}
+#stobar .stxt{white-space:nowrap}
+#stodlg{width:min(640px,96vw);max-height:94vh;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+#stodlg::backdrop{background:rgba(0,0,0,.7)}
+.stohead{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.stohead h2{margin:0;font-size:1.1rem;font-weight:600}
+.stobody{padding:16px;overflow-y:auto;max-height:74vh}
+.stobody h3{font-size:.95rem;font-weight:600;margin:20px 0 8px;color:var(--ink)}
+.stobody h3:first-child{margin-top:0}
+.sto-disk{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.sto-disk .sbar{flex:1;height:10px;background:var(--line);border-radius:5px;overflow:hidden;min-width:120px}
+.sto-disk .sbar i{display:block;height:100%;background:var(--acc);border-radius:5px}
+.sto-disk span{font-size:.9rem;white-space:nowrap}
+.sto-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.sto-row:last-child{border-bottom:0}
+.sto-row .sr-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:10px}
+.sto-row .sr-size{flex:none;color:var(--mute);white-space:nowrap}
+.sto-row .sr-bar{flex:none;width:80px;height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-left:8px}
+.sto-row .sr-bar i{display:block;height:100%;background:var(--acc);border-radius:2px}
+.sto-subs{padding-left:20px;margin-bottom:4px}
+.sto-subs .sto-row{color:var(--mute);font-size:.82rem}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <nav id="crumbs" aria-label="Folder path"></nav>
+    <div class="tools">
+      <button id="mk">New folder</button>
+      <button id="up" class="primary">Upload</button>
+      <button id="tr" hidden>Trash</button>
+      <button id="back" hidden>Back to files</button>
+      <button id="empty" class="danger" hidden>Empty trash</button>
+      <input id="pick" type="file" multiple hidden>
+    </div>
+  </header>
+  <p id="note" class="note" hidden>Deleted items stay here for 48 hours, then they are removed for good.</p>
+  <section id="ups" hidden>
+    <div id="upall">
+      <div class="uphead"><span id="uptxt"></span><span id="uppct"></span></div>
+      <div class="bar"><i id="upbar"></i></div>
+    </div>
+    <div id="uprows"></div>
+    <div id="upmore" class="upmore" hidden></div>
+  </section>
+  <ul id="list"></ul>
+</main>
+
+<dialog id="pv">
+  <div class="pvhead"><span id="pvname"></span><button id="pvclose">Close</button></div>
+  <div id="pvbody"></div>
+  <div class="pvfoot"><a id="pvdl" class="btn primary">Download</a><button id="pvdel" class="danger">Delete</button></div>
+</dialog>
+<div id="st" role="status" hidden></div>
+
+<div id="stobar" hidden>
+  <span class="stxt" id="stotxt">Loading…</span>
+  <div class="sbar"><i id="stobarfill"></i></div>
+</div>
+
+<dialog id="stodlg">
+  <div class="stohead"><h2>Storage Details</h2><button id="stoclose">Close</button></div>
+  <div class="stobody" id="stobody"></div>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s), enc = encodeURIComponent;
+const join = (a, b) => a ? a + '/' + b : b;
+const ext = n => (n.match(/\.([^.]+)$/) || [, ''])[1].toLowerCase();
+const kind = n => ['jpg','jpeg','png','gif','webp'].includes(ext(n)) ? 'img' : ['mp4','webm'].includes(ext(n)) ? 'video' : '';
+const url = p => '/api/download?name=' + enc(p);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+let path = '', timer, trashOn = false, inTrash = false;
+
+function say(t, bad) {
+  const s = $('#st');
+  clearTimeout(timer);
+  s.textContent = t; s.className = bad ? 'bad' : ''; s.hidden = !t;
+  if (t && !t.startsWith('Uploading')) timer = setTimeout(() => s.hidden = true, 3500);
+}
+
+function crumbs() {
+  const box = $('#crumbs'), parts = path ? path.split('/') : [];
+  box.textContent = '';
+  if (inTrash) { box.append(el('strong', '', 'Trash')); return; }
+  const add = (label, p, last) => {
+    if (last) { box.append(el('strong', '', label)); return; }
+    const a = el('a', '', label); a.href = '#' + enc(p); box.append(a, ' / ');
+  };
+  add('Files', '', !parts.length);
+  parts.forEach((x, i) => add(x, parts.slice(0, i + 1).join('/'), i === parts.length - 1));
+}
+
+function chrome() {
+  $('#mk').hidden = $('#up').hidden = inTrash;
+  $('#tr').hidden = inTrash || !trashOn;
+  $('#back').hidden = $('#empty').hidden = $('#note').hidden = !inTrash;
+}
+
+function route() {
+  const raw = location.hash.slice(1);
+  inTrash = raw === '?trash';
+  path = inTrash ? '' : decodeURIComponent(raw);
+  return inTrash ? loadTrash() : load();
+}
+
+async function load() {
+  chrome(); crumbs();
+  const list = $('#list');
+  let items;
+  try {
+    const r = await fetch('/api/list?path=' + enc(path));
+    if (!r.ok) throw 0;
+    items = await r.json();
+  } catch { list.textContent = ''; say('Could not open this folder.', 1); return; }
+  items.sort((a, b) => b.isDirectory - a.isDirectory || a.name.localeCompare(b.name, undefined, { numeric: true }));
+  list.textContent = '';
+  if (!items.length) {
+    list.append(el('li', 'empty', 'Nothing here yet. Drop files on this page or press Upload.'));
+    return;
+  }
+  for (const it of items) {
+    const p = join(path, it.name), li = el('li', 'row'), b = el('button', 'name');
+    const ic = el('span', it.isDirectory ? 'ic dir' : 'ic', it.isDirectory ? '' : ext(it.name).slice(0, 4));
+    const nm = el('span', '', it.name), ac = el('span', 'acts');
+    b.append(ic, nm);
+    b.onclick = () => it.isDirectory ? (location.hash = enc(p)) : kind(it.name) ? preview(it.name, p) : save(it.name, p);
+    if (!it.isDirectory) {
+      const d = el('a', 'btn', 'Download'); d.href = url(p); d.download = it.name;
+      ac.append(d);
+    }
+    const x = el('button', 'danger', 'Delete'); x.onclick = () => del(it.name, p, it.isDirectory);
+    ac.append(x); li.append(b, ac); list.append(li);
+  }
+}
+
+const left = ms => {
+  const h = Math.max(0, Math.ceil(ms / 3600000));
+  return h >= 2 ? h + ' hours left' : h === 1 ? 'less than 1 hour left' : 'removing soon';
+};
+
+async function loadTrash() {
+  chrome(); crumbs();
+  const list = $('#list');
+  let items;
+  try {
+    const r = await fetch('/api/trash/list');
+    if (!r.ok) throw 0;
+    items = await r.json();
+  } catch { list.textContent = ''; say('Could not open the trash.', 1); return; }
+  items.sort((a, b) => b.deletedAt - a.deletedAt);
+  $('#empty').disabled = !items.length;
+  list.textContent = '';
+  if (!items.length) { list.append(el('li', 'empty', 'The trash is empty.')); return; }
+  for (const it of items) {
+    const li = el('li', 'row'), info = el('div', 'info'), ac = el('span', 'acts');
+    const ic = el('span', it.isDirectory ? 'ic dir' : 'ic', it.isDirectory ? '' : ext(it.name).slice(0, 4));
+    const tx = el('span'), nm = el('b', '', it.name);
+    const where = it.originalPath.includes('/') ? it.originalPath.slice(0, it.originalPath.lastIndexOf('/')) : 'Files';
+    const sub = el('small', '', 'from ' + where + ' · ' + left(it.expiresAt * 1000 - Date.now()));
+    tx.append(nm, sub); info.append(ic, tx);
+    const rs = el('button', '', 'Restore'); rs.onclick = () => restore(it);
+    const x = el('button', 'danger', 'Delete forever'); x.onclick = () => purge(it);
+    ac.append(rs, x); li.append(info, ac); list.append(li);
+  }
+}
+
+async function restore(it) {
+  const r = await fetch('/api/trash/restore?id=' + enc(it.id), { method: 'POST' });
+  say(r.ok ? 'Restored ' + it.name : 'Could not restore ' + it.name, !r.ok);
+  loadTrash();
+}
+
+async function purge(it) {
+  if (!confirm('Delete "' + it.name + '" forever? This cannot be undone.')) return;
+  const r = await fetch('/api/trash/purge?id=' + enc(it.id), { method: 'DELETE' });
+  say(r.ok ? 'Deleted ' + it.name + ' forever' : 'Could not delete ' + it.name, !r.ok);
+  loadTrash();
+}
+
+$('#empty').onclick = async () => {
+  if (!confirm('Empty the trash? Everything in it will be deleted forever.')) return;
+  const r = await fetch('/api/trash/empty', { method: 'DELETE' });
+  say(r.ok ? 'Trash emptied' : 'Could not empty the trash', !r.ok);
+  loadTrash();
+};
+
+function save(name, p) {
+  const a = document.createElement('a');
+  a.href = url(p); a.download = name; a.click();
+}
+
+function preview(name, p) {
+  const k = kind(name), body = $('#pvbody'), m = document.createElement(k);
+  body.textContent = '';
+  m.src = url(p);
+  if (k === 'video') { m.controls = true; m.playsInline = true; } else m.alt = name;
+  body.append(m);
+  $('#pvname').textContent = name;
+  const dl = $('#pvdl'); dl.href = url(p); dl.download = name;
+  $('#pvdel').onclick = () => del(name, p, false);
+  $('#pv').showModal();
+}
+
+async function del(name, p, isDir) {
+  const msg = trashOn
+    ? 'Move "' + name + '" to the trash? You can restore it for 48 hours.'
+    : 'Delete "' + name + '"? This cannot be undone.';
+  if (!confirm(msg)) return;
+  const r = await fetch('/api/delete?name=' + enc(p), { method: 'DELETE' });
+  say(r.ok ? (trashOn ? 'Moved ' + name + ' to trash' : 'Deleted ' + name) : 'Could not delete ' + name, !r.ok);
+  if (r.ok) { $('#pv').close(); load(); }
+}
+
+let busy = false;
+
+function sendFile(f, dir, onProg) {
+  return new Promise((ok, fail) => {
+    const x = new XMLHttpRequest();
+    x.open('POST', '/api/upload?path=' + enc(dir));
+    x.upload.onprogress = e => { if (e.lengthComputable) onProg(e.loaded); };
+    x.onload = () => x.status < 300 ? ok() : fail();
+    x.onerror = x.onabort = () => fail();
+    const fd = new FormData(); fd.append('file', f);
+    x.send(fd);
+  });
+}
+
+async function upload(files) {
+  if (inTrash) return;
+  if (busy) { say('Wait for the current upload to finish.', 1); return; }
+  busy = true;
+
+  const dir = path;
+  const jobs = files.map(f => ({ f, size: f.size || 1, sent: 0, done: false }));
+  const total = jobs.reduce((s, j) => s + j.size, 0);
+  let next = 0, failed = 0;
+
+  $('#ups').hidden = false;
+  $('#upall').hidden = jobs.length < 2;
+
+  const draw = () => {
+    const pct = Math.round(jobs.reduce((s, j) => s + j.sent, 0) / total * 100);
+    $('#uptxt').textContent = 'Uploading ' + jobs.filter(j => j.done).length + ' of ' + jobs.length + ' files';
+    $('#uppct').textContent = pct + '%';
+    $('#upbar').style.width = pct + '%';
+
+    const active = jobs.filter(j => !j.done).sort((a, b) => b.sent / b.size - a.sent / a.size);
+    const rows = $('#uprows');
+    rows.textContent = '';
+    for (const j of active.slice(0, 3)) {
+      const p = Math.round(j.sent / j.size * 100);
+      const r = el('div', 'uprow'), b = el('div', 'bar'), i = el('i');
+      r.append(el('span', '', j.f.name), el('span', '', p + '%'));
+      i.style.width = p + '%'; b.append(i);
+      rows.append(r, b);
+    }
+    const more = active.length - 3;
+    $('#upmore').hidden = more <= 0;
+    $('#upmore').textContent = '… and ' + more + ' more file' + (more > 1 ? 's' : '');
+  };
+
+  const worker = async () => {
+    while (next < jobs.length) {
+      const j = jobs[next++];
+      try { await sendFile(j.f, dir, n => { j.sent = Math.min(n, j.size); draw(); }); }
+      catch { failed++; }
+      j.sent = j.size; j.done = true;
+      draw();
+    }
+  };
+
+  draw();
+  await Promise.all([worker(), worker(), worker()]);
+
+  $('#ups').hidden = true;
+  busy = false;
+  say(failed ? failed + ' of ' + jobs.length + ' uploads failed' : 'Uploaded ' + jobs.length + (jobs.length > 1 ? ' files' : ' file'), !!failed);
+  load();
+}
+
+$('#up').onclick = () => $('#pick').click();
+$('#pick').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) upload(f); };
+$('#mk').onclick = async () => {
+  const n = (prompt('Folder name') || '').trim();
+  if (!n) return;
+  if (n.includes('/')) { say('Folder names cannot contain "/".', 1); return; }
+  const r = await fetch('/api/mkdir?name=' + enc(join(path, n)), { method: 'POST' });
+  const ok = r.ok && (await r.text()) === 'created';
+  say(ok ? 'Created ' + n : 'Could not create ' + n + ' (it may already exist).', !ok);
+  if (ok) load();
+};
+$('#tr').onclick = () => location.hash = '?trash';
+$('#back').onclick = () => location.hash = '';
+$('#pvclose').onclick = () => $('#pv').close();
+$('#pv').addEventListener('close', () => $('#pvbody').textContent = '');
+$('#pv').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer.files.length) upload([...e.dataTransfer.files]); });
+addEventListener('hashchange', route);
+
+// The Trash button only appears once the backend answers /api/trash/list.
+fetch('/api/trash/list').then(r => { trashOn = r.ok; }).catch(() => {}).finally(route);
+
+// -- STORAGE BAR --
+
+const hSize = b => {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+  if (b < 1099511627776) return (b / 1073741824).toFixed(2) + ' GB';
+  return (b / 1099511627776).toFixed(2) + ' TB';
+};
+
+let stoData = null;
+
+async function loadStorage() {
+  try {
+    const r = await fetch('/api/storage');
+    if (!r.ok) return;
+    stoData = await r.json();
+    const pct = stoData.totalBytes ? Math.round(stoData.usedBytes / stoData.totalBytes * 100) : 0;
+    $('#stotxt').textContent = hSize(stoData.freeBytes) + ' free of ' + hSize(stoData.totalBytes);
+    $('#stobarfill').style.width = pct + '%';
+    $('#stobar').hidden = false;
+  } catch {}
+}
+
+function stoRow(name, bytes, maxBytes) {
+  const r = el('div', 'sto-row');
+  const pct = maxBytes ? Math.round(bytes / maxBytes * 100) : 0;
+  r.append(el('span', 'sr-name', name), el('span', 'sr-size', hSize(bytes)));
+  const bar = el('div', 'sr-bar'), fill = el('i');
+  fill.style.width = pct + '%'; bar.append(fill); r.append(bar);
+  return r;
+}
+
+function showStorage() {
+  if (!stoData) return;
+  const body = $('#stobody');
+  body.textContent = '';
+
+  // disk overview
+  const pct = stoData.totalBytes ? Math.round(stoData.usedBytes / stoData.totalBytes * 100) : 0;
+  const h = el('h3', '', 'Disk Usage');
+  const disk = el('div', 'sto-disk');
+  const bar = el('div', 'sbar'), fill = el('i');
+  fill.style.width = pct + '%'; bar.append(fill);
+  disk.append(
+    el('span', '', hSize(stoData.usedBytes) + ' used'),
+    bar,
+    el('span', '', hSize(stoData.freeBytes) + ' free'),
+    el('span', '', '(' + pct + '% of ' + hSize(stoData.totalBytes) + ')')
+  );
+  body.append(h, disk);
+
+  // folder breakdown
+  if (stoData.folders && stoData.folders.length) {
+    body.append(el('h3', '', 'Folders by Size'));
+    const totalUsed = stoData.folders.reduce((s, f) => s + f.bytes, 0);
+    for (const f of stoData.folders) {
+      body.append(stoRow(f.name, f.bytes, totalUsed || 1));
+      if (f.subfolders && f.subfolders.length) {
+        const sub = el('div', 'sto-subs');
+        for (const s of f.subfolders)
+          sub.append(stoRow(s.name, s.bytes, f.bytes || 1));
+        body.append(sub);
+      }
+    }
+  }
+
+  // top files
+  if (stoData.topFiles && stoData.topFiles.length) {
+    const n = stoData.topFiles.length;
+    body.append(el('h3', '', 'Top ' + n + ' largest files (' + hSize(stoData.topFilesBytes) + ' total)'));
+    const maxF = stoData.topFiles[0].bytes || 1;
+    for (const f of stoData.topFiles)
+      body.append(stoRow(f.path, f.bytes, maxF));
+  }
+
+  $('#stodlg').showModal();
+}
+
+$('#stobar').onclick = showStorage;
+$('#stoclose').onclick = () => $('#stodlg').close();
+$('#stodlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+
+loadStorage();
+</script>
+</body>
+</html>
