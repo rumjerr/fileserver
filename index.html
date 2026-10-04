@@ -79,6 +79,15 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
 .sto-row .sr-bar i{display:block;height:100%;background:var(--acc);border-radius:2px}
 .sto-subs{padding-left:20px;margin-bottom:4px}
 .sto-subs .sto-row{color:var(--mute);font-size:.82rem}
+#mvdlg{width:min(520px,96vw);max-height:90vh;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+#mvdlg::backdrop{background:rgba(0,0,0,.7)}
+.mvhead,.mvfoot{display:flex;gap:8px;align-items:center;padding:12px 14px}
+.mvhead span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mvfoot{justify-content:flex-end}
+#mvcur{padding:0 14px 8px;color:var(--mute);font-size:.85rem;overflow-wrap:anywhere}
+#mvlist{max-height:46vh;overflow-y:auto;margin:0 14px}
+#mvgo:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:560px){.row{flex-wrap:wrap}.acts{width:100%;justify-content:flex-end}}
 </style>
 </head>
 <body>
@@ -111,6 +120,12 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
   <div id="pvbody"></div>
   <div class="pvfoot"><a id="pvdl" class="btn primary">Download</a><button id="pvdel" class="danger">Delete</button></div>
 </dialog>
+<dialog id="mvdlg">
+<div class="mvhead"><span id="mvtitle"></span><button id="mvclose">Cancel</button></div>
+<div id="mvcur"></div>
+<ul id="mvlist"></ul>
+<div class="mvfoot"><button id="mvgo" class="primary">Move here</button></div>
+</dialog>
 <div id="st" role="status" hidden></div>
 
 <div id="stobar" hidden>
@@ -127,7 +142,8 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
 const $ = s => document.querySelector(s), enc = encodeURIComponent;
 const join = (a, b) => a ? a + '/' + b : b;
 const ext = n => (n.match(/\.([^.]+)$/) || [, ''])[1].toLowerCase();
-const kind = n => ['jpg','jpeg','png','gif','webp'].includes(ext(n)) ? 'img' : ['mp4','webm'].includes(ext(n)) ? 'video' : '';
+const isHeic = n => ['heic','heif'].includes(ext(n));
+const kind = n => ['jpg','jpeg','png','gif','webp','heic','heif'].includes(ext(n)) ? 'img' : ['mp4','webm'].includes(ext(n)) ? 'video' : '';
 const url = p => '/api/download?name=' + enc(p);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 let path = '', timer, trashOn = false, inTrash = false;
@@ -189,7 +205,10 @@ async function load() {
       const d = el('a', 'btn', 'Download'); d.href = url(p); d.download = it.name;
       ac.append(d);
     }
-    const x = el('button', 'danger', 'Delete'); x.onclick = () => del(it.name, p, it.isDirectory);
+    const rn = el('button', '', 'Rename'); rn.onclick = () => renameItem(it.name, p);
+const mv = el('button', '', 'Move'); mv.onclick = () => moveItem(it.name, p, it.isDirectory);
+ac.append(rn, mv);
+const x = el('button', 'danger', 'Delete'); x.onclick = () => del(it.name, p, it.isDirectory);
     ac.append(x); li.append(b, ac); list.append(li);
   }
 }
@@ -253,7 +272,8 @@ function save(name, p) {
 function preview(name, p) {
   const k = kind(name), body = $('#pvbody'), m = document.createElement(k);
   body.textContent = '';
-  m.src = url(p);
+  m.src = isHeic(name) ? '/api/preview?name=' + enc(p) + '&size=2000' : url(p);
+if (isHeic(name)) m.onerror = () => say('Could not preview this HEIC.', 1);
   if (k === 'video') { m.controls = true; m.playsInline = true; } else m.alt = name;
   body.append(m);
   $('#pvname').textContent = name;
@@ -262,6 +282,54 @@ function preview(name, p) {
   $('#pv').showModal();
 }
 
+async function renameItem(name, p) {
+  const n = (prompt('New name', name) || '').trim();
+  if (!n || n === name) return;
+  if (n.includes('/')) { say('Names cannot contain "/".', 1); return; }
+  const r = await fetch('/api/rename?name=' + enc(p) + '&newName=' + enc(n), { method: 'POST' });
+  say(r.ok ? 'Renamed to ' + n : r.status === 409 ? '"' + n + '" already exists here.' : 'Could not rename ' + name, !r.ok);
+  if (r.ok) load();
+}
+let mvName = '', mvSrc = '', mvIsDir = false, mvDir = '';
+const upDir = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '';
+async function mvShow(dir) {
+  mvDir = dir;
+  $('#mvcur').textContent = 'Destination: ' + (dir ? 'Files / ' + dir.split('/').join(' / ') : 'Files');
+  const inside = mvIsDir && (dir === mvSrc || dir.startsWith(mvSrc + '/'));
+  $('#mvgo').disabled = inside || dir === upDir(mvSrc);
+  const list = $('#mvlist');
+  list.textContent = '';
+  let items;
+  try {
+    const r = await fetch('/api/list?path=' + enc(dir));
+    if (!r.ok) throw 0;
+    items = await r.json();
+  } catch { list.append(el('li', 'empty', 'Could not open this folder.')); return; }
+  const row = (label, to) => {
+    const li = el('li', 'row'), b = el('button', 'name');
+    b.append(el('span', 'ic dir'), el('span', '', label));
+    b.onclick = () => mvShow(to);
+    li.append(b); list.append(li);
+  };
+  if (dir) row('.. (up one folder)', upDir(dir));
+  items.filter(i => i.isDirectory && join(dir, i.name) !== mvSrc)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+    .forEach(i => row(i.name, join(dir, i.name)));
+  if (!list.children.length) list.append(el('li', 'empty', 'No subfolders here.'));
+}
+function moveItem(name, p, isDir) {
+  mvName = name; mvSrc = p; mvIsDir = isDir;
+  $('#mvtitle').textContent = 'Move "' + name + '"';
+  $('#mvdlg').showModal();
+  mvShow(path);
+}
+$('#mvgo').onclick = async () => {
+  const r = await fetch('/api/move?name=' + enc(mvSrc) + '&dest=' + enc(mvDir), { method: 'POST' });
+  say(r.ok ? 'Moved ' + mvName : r.status === 409 ? 'A file named "' + mvName + '" is already in that folder.' : 'Could not move ' + mvName, !r.ok);
+  if (r.ok) { $('#mvdlg').close(); load(); }
+};
+$('#mvclose').onclick = () => $('#mvdlg').close();
+$('#mvdlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 async function del(name, p, isDir) {
   const msg = trashOn
     ? 'Move "' + name + '" to the trash? You can restore it for 48 hours.'

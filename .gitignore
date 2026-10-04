@@ -2,6 +2,7 @@
 fileserver
 server
 *.o
+*.d
 
 # editor files
 .vscode/

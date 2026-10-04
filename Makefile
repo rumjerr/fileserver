@@ -1,6 +1,6 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -O2
-LDFLAGS = -lpthread
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -MMD -MP $(shell pkg-config --cflags libheif)
+LDFLAGS = -lpthread $(shell pkg-config --libs libheif)
 
 all: fileserver
 
@@ -10,5 +10,7 @@ fileserver: main.o mainfunctions.o
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+-include $(wildcard *.d)
+
 clean:
-	rm -f *.o fileserver server
+	rm -f *.o *.d fileserver server

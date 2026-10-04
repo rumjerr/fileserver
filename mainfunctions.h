@@ -20,7 +20,7 @@ json toJson(const std::vector<FileEntry> &entries);
 fs::path safePath(const std::string &name);
 bool createDir(const fs::path &dir);
 
-// these two were commented out since they arent needed in mainfunctions.cpp but if needed (for troubleshooting/reference,etc) they can be uncommented
+// these two were commented out since they arent needed in mainfunctions.cpp but if needed (for troubleshooting/reference,etc) they will be uncommented
 
 // bool changeDir(fs::path &currentDir, const std::string &folderName);
 // bool deleteFile(const fs::path &path);
@@ -37,3 +37,11 @@ bool purgeFromTrash(const std::string &id);
 bool emptyTrash();
 void purgeExpired();
 json storageInfo();
+
+// v1.3
+
+enum class OpResult { Ok, NotFound, Exists, Invalid, Failed };
+OpResult moveStuff(const fs::path &src, const fs::path &destDir);
+OpResult renameStuff(const fs::path &src, const std::string &newName);
+bool isHeic(const fs::path &path);
+bool heicToJpeg(const fs::path &path, int maxSide, std::string &outJpeg);
