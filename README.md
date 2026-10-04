@@ -11,15 +11,12 @@ it includes a trash function which keeps files for 48 hours before deletion and 
 it also shows your path and includes a safepath and other stuff
 
 i use it on my personal debian server to which i connect to via tailscale to upload projects from my pc to my laptop
-i made it as a learning project for a new library since i only did simple projects before like a guessing game with spammed if else
-it was mostly for my need to share files and keep files easily. this way my family members can use my server instead of paid google drive, etc
+i made it as a learning project for a new library
+it was mostly for my need to share files and keep files easily
 
-i only coded the important functions in mainfunctions.cpp and vibecoded the functions for the trash and storage info
-also the entire frontend is ai generated. i havent even touched a line of html or json
-unlike the trash functions the frontend is fully ai generated and not so readable like the cpp code
-i did very little for main.cpp too.
-
-as i said this project was for learning and to solve a problem of mine. thats why i only touched the core stuff
+i only coded the important functions in mainfunctions.cpp and vibecoded the functions for the trash and storage info.
+also the entire frontend is ai generated. i havent even touched a line of html or json.
+unlike the trash functions the frontend is fully ai generated and not so readable like the cpp code.
 
 the gui is very easy to use and convenient
 
